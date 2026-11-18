@@ -82,6 +82,6 @@ const len=Math.hypot(forward,side);if(len){forward/=len;side/=len;const angle=ya
 for(let i=loot.length-1;i>=0;i--){const l=loot[i];l.group.position.y=.3+Math.sin(t*.002+l.phase)*.13;l.group.rotation.y+=dt*.8;const dx=player.position.x-l.group.position.x,dz=player.position.z-l.group.position.z;if(Math.hypot(dx,dz)<1.25){if(bag.length>=capacity){toast('Bag full! Sell your loot.');continue}bag.push(l.data);scene.remove(l.group);loot.splice(i,1);updateUI();toast('Collected '+l.data.emoji+' '+l.data.name+'!');if(loot.length<7){let a=Math.random()*Math.PI*2,r=3+Math.random()*8;makeLoot(catalog[Math.floor(Math.random()*catalog.length)],Math.cos(a)*r,Math.sin(a)*r)}}}
 cameraUpdate();renderer.render(scene,camera)}
 requestAnimationFrame(animate);
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7)});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));});
 updateUI();
 </script></body></html>

@@ -15,7 +15,9 @@ header{position:fixed;z-index:4;left:0;right:0;top:0;padding:15px 18px;display:f
 <div id="joystick"><div id="stick"></div></div><div id="mobileLook"></div><div id="toast"></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';\nwindow.addEventListener('error',e=>{const p=document.getElementById('fatal');p.style.display='block';document.getElementById('fatalText').textContent=e.message+'\\n'+(e.filename||'')+':'+e.lineno});\nwindow.addEventListener('unhandledrejection',e=>{const p=document.getElementById('fatal');p.style.display='block';document.getElementById('fatalText').textContent=String(e.reason)});
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+window.addEventListener('error',e=>{const p=document.getElementById('fatal');p.style.display='block';document.getElementById('fatalText').textContent=e.message+'\\n'+(e.filename||'')+':'+e.lineno});
+window.addEventListener('unhandledrejection',e=>{const p=document.getElementById('fatal');p.style.display='block';document.getElementById('fatalText').textContent=String(e.reason)});
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9ccbd3);scene.fog=new THREE.Fog(0x9ccbd3,30,65);
 const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.getElementById('world').appendChild(renderer.domElement);

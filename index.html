@@ -7,6 +7,16 @@ header{position:fixed;z-index:4;left:0;right:0;top:0;padding:15px 18px;display:f
 #joystick{display:block;position:fixed;z-index:6;left:18px;bottom:22px;width:128px;height:128px;border-radius:50%;background:radial-gradient(circle,#ffffff16,#16251c55);border:2px solid #ffffff44;touch-action:none;user-select:none}#stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:linear-gradient(145deg,#d4f58c,#7eac49);border:2px solid #f0ffd2;box-shadow:0 5px 18px #0005;pointer-events:none}
 #mobileLook{position:fixed;z-index:2;right:0;top:25%;bottom:20%;width:48%;touch-action:none}
 @media(max-width:700px){header{padding:12px}h1{font-size:17px}.pill{padding:8px 10px;font-size:12px}#hint{top:60px;font-size:10px}#collection{right:9px;left:auto;bottom:9px;width:calc(100vw - 158px);max-width:calc(100vw - 158px);padding:10px}#joystick{display:block;width:122px;height:122px;left:12px;bottom:22px}#stick{width:52px;height:52px;left:33px;top:33px}#mobileLook{width:50%;top:30%;bottom:25%}#raid{right:10px;top:75px;padding:9px;font-size:11px}#toast{bottom:160px;font-size:12px}}
+
+/* refreshed responsive HUD */
+#collection{width:300px;max-width:calc(100vw - 155px);bottom:12px;right:12px;padding:12px}
+#joystick{width:140px;height:140px;left:14px;bottom:16px;background:radial-gradient(circle,#b9d9ff22,#10203388);border:2px solid #b9d9ff66}
+#stick{width:60px;height:60px;left:38px;top:38px;background:linear-gradient(145deg,#8ce0ff,#3589c8);border-color:#d7f5ff}
+header{background:linear-gradient(#142536dd,transparent)}h1{color:#8ce0ff;text-shadow:0 3px 8px #20311e}
+.panel{background:#142536eF;border:1px solid #4384a7;border-radius:18px}
+.panel h2{color:#8ce0ff}
+button{background:#8ce0ff;color:#132432}button.secondary{background:#254861;border-color:#5792b5}
+@media(max-width:700px){#collection{right:8px;bottom:8px;width:min(260px,calc(100vw - 150px));max-width:calc(100vw - 150px);padding:9px}#joystick{width:126px;height:126px;left:10px;bottom:12px}#stick{width:54px;height:54px;left:34px;top:34px}#hint{max-width:88vw;white-space:normal;text-align:center}}
 </style></head><body><div id="world"></div><div id="fatal" style="display:none;position:fixed;z-index:99;inset:0;background:#142019;color:white;padding:24px;font:16px system-ui;overflow:auto"><h2>GRAB & GROW failed to load</h2><pre id="fatalText" style="white-space:pre-wrap"></pre><button onclick="location.reload()">RELOAD</button></div>
 <header><h1>GRAB & GROW <span style="font-size:10px;color:#eef4e7">3D</span></h1><div class="stats"><div class="pill">🪙 <b id="coins">0</b></div><div class="pill">🎒 <b id="bagCount">0</b>/<span id="capacity">5</span></div></div></header>
 <div id="hint">WASD / ARROWS · TOUCH JOYSTICK · DRAG RIGHT SIDE TO LOOK</div>
@@ -20,8 +30,8 @@ window.addEventListener('error',e=>{const p=document.getElementById('fatal');p.s
 window.addEventListener('unhandledrejection',e=>{const p=document.getElementById('fatal');p.style.display='block';document.getElementById('fatalText').textContent=String(e.reason)});
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9ccbd3);scene.fog=new THREE.Fog(0x9ccbd3,30,65);
 const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.getElementById('world').appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xeafaff,0x5c7548,2.1));const sun=new THREE.DirectionalLight(0xfff1d9,2.6);sun.position.set(-12,18,10);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const renderer=new THREE.WebGLRenderer({antialias:false,alpha:false,powerPreference:"low-power",failIfMajorPerformanceCaveat:false});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.getElementById('world').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xeafaff,0x5c7548,2.1));const sun=new THREE.DirectionalLight(0xfff1d9,2.6);sun.position.set(-12,18,10);sun.castShadow=false;scene.add(sun);
 const M=(c,r=.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
 const grass=M(0x79ad55),grass2=M(0x5e9145),soil=M(0x816044),wood=M(0x875635),stone=M(0x838b84),leaf=M(0x367f47),leafB=M(0x5a9b50),cream=M(0xffe2a0);
 const island=new THREE.Group();scene.add(island);
@@ -37,11 +47,11 @@ const home=new THREE.Group();home.position.set(0,.2,-8);island.add(home);let hou
 const canvasText=document.createElement('canvas');canvasText.width=512;canvasText.height=96;let ctx=canvasText.getContext('2d');ctx.fillStyle='#18251b';ctx.fillRect(0,0,512,96);ctx.fillStyle='#c9f36b';ctx.font='bold 46px sans-serif';ctx.textAlign='center';ctx.fillText('YOUR HIDEOUT',256,65);let tex=new THREE.CanvasTexture(canvasText);let sign=new THREE.Mesh(new THREE.BoxGeometry(2.7,.55,.15),M(0x18251b));sign.position.set(0,2.15,1.5);home.add(sign);let signface=new THREE.Mesh(new THREE.PlaneGeometry(2.5,.42),new THREE.MeshBasicMaterial({map:tex}));signface.position.set(0,2.15,1.59);home.add(signface);
 // stylized character with articulated joints for visible gait
 const player=new THREE.Group();scene.add(player);player.position.set(0,.25,3);
-const body=new THREE.Group();body.position.y=1.12;player.add(body);let torso=new THREE.Mesh(new THREE.CapsuleGeometry(.38,.7,4,8),M(0xc8ed72));torso.castShadow=true;body.add(torso);
-let head=new THREE.Mesh(new THREE.SphereGeometry(.36,18,14),M(0xe7b58b));head.position.y=.92;head.castShadow=true;body.add(head);let hair=new THREE.Mesh(new THREE.SphereGeometry(.37,16,10,0,Math.PI*2,0,Math.PI*.65),M(0x49352b));hair.position.y=1.08;body.add(hair);
+const body=new THREE.Group();body.position.y=1.12;player.add(body);let torso=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.72,3,7),M(0x5bc0eb));torso.castShadow=true;body.add(torso);
+let head=new THREE.Mesh(new THREE.SphereGeometry(.38,12,10),M(0xe7b58b));head.position.y=.92;head.castShadow=true;body.add(head);let hair=new THREE.Mesh(new THREE.SphereGeometry(.39,12,8,0,Math.PI*2,0,Math.PI*.65),M(0x49352b));hair.position.y=1.08;body.add(hair);
 let eyeMat=M(0x243329);for(let x of [-.13,.13]){let e=new THREE.Mesh(new THREE.SphereGeometry(.045,8,8),eyeMat);e.position.set(x,.94,.31);body.add(e)}
-let armL=new THREE.Group(),armR=new THREE.Group();armL.position.set(-.48,.35,0);armR.position.set(.48,.35,0);body.add(armL,armR);function arm(g){let m=new THREE.Mesh(new THREE.CapsuleGeometry(.13,.45,4,8),M(0xe7b58b));m.position.y=-.27;m.castShadow=true;g.add(m)}arm(armL);arm(armR);
-let legL=new THREE.Group(),legR=new THREE.Group();legL.position.set(-.2,.3,0);legR.position.set(.2,.3,0);player.add(legL,legR);function leg(g){let p=new THREE.Mesh(new THREE.BoxGeometry(.25,.52,.27),M(0x425a83));p.position.y=-.26;p.castShadow=true;g.add(p);let f=new THREE.Mesh(new THREE.BoxGeometry(.32,.16,.43),M(0x25342d));f.position.set(0,-.52,.1);g.add(f)}leg(legL);leg(legR);
+let armL=new THREE.Group(),armR=new THREE.Group();armL.position.set(-.48,.35,0);armR.position.set(.48,.35,0);body.add(armL,armR);function arm(g){let m=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.42,3,6),M(0xe7b58b));m.position.y=-.27;m.castShadow=true;g.add(m)}arm(armL);arm(armR);
+let legL=new THREE.Group(),legR=new THREE.Group();legL.position.set(-.2,.3,0);legR.position.set(.2,.3,0);player.add(legL,legR);function leg(g){let p=new THREE.Mesh(new THREE.BoxGeometry(.28,.48,.3),M(0x354a70));p.position.y=-.26;p.castShadow=true;g.add(p);let f=new THREE.Mesh(new THREE.BoxGeometry(.34,.15,.4),M(0x182333));f.position.set(0,-.52,.1);g.add(f)}leg(legL);leg(legR);
 const catalog=[{name:'Bloop Bubble',emoji:'🫧',value:15,color:0x70dce8,kind:'bubble'},{name:'Mossling Sprout',emoji:'🌱',value:20,color:0x79bc51,kind:'sprout'},{name:'Dust Bunny',emoji:'🐰',value:25,color:0xf0d9c4,kind:'bunny'},{name:'Glowbug Lantern',emoji:'🏮',value:30,color:0xffc957,kind:'lantern'},{name:'Rock Buddy',emoji:'🪨',value:35,color:0x929b9e,kind:'rock'},{name:'Tiny UFO',emoji:'🛸',value:50,color:0xa69bff,kind:'ufo'}];
 let loot=[],bag=[],coins=0,capacity=5,upgradeCost=100;
 function meshLoot(d){let g=new THREE.Group(),m;

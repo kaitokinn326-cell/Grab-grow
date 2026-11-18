@@ -1,30 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>GRAB & GROW</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>GRAB & GROW — 3D Prototype</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#101510;color:#f4f4ec;font-family:Arial,sans-serif}header{padding:16px;display:flex;justify-content:space-between;align-items:center;background:#19231b;border-bottom:1px solid #344735}h1{font-size:21px;margin:0;color:#c5f36a}#stats{display:flex;gap:12px;font-size:14px}main{max-width:900px;margin:auto;padding:14px}#game{position:relative;width:100%;height:min(66vh,540px);min-height:350px;overflow:hidden;border:2px solid #415540;border-radius:14px;background:#304d35}#game canvas{width:100%;height:100%;display:block}#hud{position:absolute;top:10px;left:10px;background:#101510dc;padding:9px 12px;border-radius:10px;font-size:13px;pointer-events:none}#toast{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#172119;padding:10px 15px;border:1px solid #a4d85c;border-radius:12px;display:none;text-align:center;white-space:nowrap}#panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.box{background:#1a241c;border:1px solid #344735;border-radius:12px;padding:14px}.box h2{font-size:16px;margin:0 0 10px;color:#c5f36a}button{border:0;border-radius:9px;padding:12px;background:#c5f36a;color:#162015;font-weight:bold;cursor:pointer}button:active{transform:scale(.97)}button:disabled{opacity:.4}#items{font-size:14px;line-height:1.8}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1;min-width:110px}#controls{display:none;grid-template-columns:repeat(3,60px);grid-template-rows:repeat(2,52px);justify-content:center;gap:6px;margin:12px auto}#controls button{background:#354936;color:white;font-size:20px}#controls button:first-child{grid-column:2}small{color:#a9b7a8}@media(max-width:600px){#panel{grid-template-columns:1fr}#controls{display:grid}header{flex-wrap:wrap;gap:8px}#stats{font-size:12px}}
-</style></head><body>
-<header><h1>GRAB & GROW</h1><div id="stats"><span>🪙 <b id="coins">0</b></span><span>🎒 <b id="bag">0</b>/<b id="capacity">5</b></span></div></header>
-<main><div id="game"><canvas id="c"></canvas><div id="hud">WASD / Arrows to move · Collect glowing loot</div><div id="toast"></div></div>
-<div id="controls"><button onclick="move(0,-1)">▲</button><button onclick="move(-1,0)">◀</button><button onclick="move(1,0)">▶</button><button onclick="move(0,1)">▼</button></div>
-<div id="panel"><div class="box"><h2>🎒 Your Collection</h2><div id="items">Your bag is empty.</div><div class="actions" style="margin-top:12px"><button onclick="sell()">Sell Bag</button><button onclick="upgrade()">Bag Upgrade <small id="upgradeCost">100</small></button></div></div>
-<div class="box"><h2>🏚️ Rival Hideout</h2><p id="rivalText">A rival is guarding a strange treasure.</p><button id="raidBtn" onclick="raid()">Attempt Raid</button><p><small>Raids are mini-game challenges. Success earns loot; failure has a small coin penalty.</small></p></div></div><p style="color:#9ba99a;font-size:12px;text-align:center">Prototype 0.1 · Explore, collect, sell, upgrade.</p></main>
-<script>
-const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W=0,H=0,coins=0,bag=[],capacity=5,upgradeCost=100,player={x:100,y:100,speed:3},loot=[],keys={};
-const types=[{name:"Bloop",emoji:"🫧",value:15},{name:"Mossling",emoji:"🌱",value:20},{name:"Dust Bunny",emoji:"🐰",value:25},{name:"Glowbug",emoji:"✨",value:30},{name:"Rock Buddy",emoji:"🪨",value:35},{name:"Tiny UFO",emoji:"🛸",value:50}];
-function resize(){const r=canvas.getBoundingClientRect();W=canvas.width=r.width;H=canvas.height=r.height;player.x=Math.min(player.x,W-20);player.y=Math.min(player.y,H-20)}window.addEventListener('resize',resize);resize();
-function spawn(){loot=[];for(let i=0;i<12;i++){let t=types[Math.floor(Math.random()*types.length)];loot.push({x:30+Math.random()*(W-60),y:30+Math.random()*(H-60),t})}}spawn();
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#35543a';ctx.fillRect(0,0,W,H);for(let i=0;i<100;i++){let x=(i*97)%W,y=(i*53)%H;ctx.fillStyle=i%2?'#3a5a3e':'#38563a';ctx.fillRect(x,y,3,3)}ctx.fillStyle='#6a644b';ctx.beginPath();ctx.ellipse(W*.75,H*.75,W*.23,H*.12,-.6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#29392b';ctx.fillRect(W-100,H-100,80,70);ctx.fillStyle='#b3d87b';ctx.fillRect(W-90,H-90,60,50);ctx.fillStyle='#26362a';ctx.fillRect(W-72,H-70,24,30);ctx.fillStyle='white';ctx.font='12px Arial';ctx.fillText('RIVAL',W-92,H-105);loot.forEach(l=>{ctx.fillStyle='#d3f87d55';ctx.beginPath();ctx.arc(l.x,l.y,18,0,Math.PI*2);ctx.fill();ctx.font='23px Arial';ctx.textAlign='center';ctx.fillText(l.t.emoji,l.x,l.y+8)});ctx.fillStyle='#c5f36a';ctx.beginPath();ctx.arc(player.x,player.y,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#142014';ctx.beginPath();ctx.arc(player.x+4,player.y-3,3,0,Math.PI*2);ctx.fill();ctx.textAlign='center';ctx.font='12px Arial';ctx.fillStyle='white';ctx.fillText('YOU',player.x,player.y-20);requestAnimationFrame(draw)}draw();
-function update(){if(keys['ArrowUp']||keys['w'])move(0,-1);if(keys['ArrowDown']||keys['s'])move(0,1);if(keys['ArrowLeft']||keys['a'])move(-1,0);if(keys['ArrowRight']||keys['d'])move(1,0)}
-function move(dx,dy){player.x=Math.max(15,Math.min(W-15,player.x+dx*player.speed));player.y=Math.max(15,Math.min(H-15,player.y+dy*player.speed));checkLoot()}
-function checkLoot(){for(let i=loot.length-1;i>=0;i--){let l=loot[i];if(Math.hypot(player.x-l.x,player.y-l.y)<27){if(bag.length>=capacity){toast('Your bag is full! Sell your loot.');return}bag.push(l.t);loot.splice(i,1);toast('Collected '+l.t.emoji+' '+l.t.name+'!');updateUI();if(loot.length<5)spawnMore()}}}
-function spawnMore(){for(let i=0;i<5;i++){let t=types[Math.floor(Math.random()*types.length)];loot.push({x:30+Math.random()*(W-60),y:30+Math.random()*(H-60),t})}}
-function sell(){if(!bag.length){toast('Nothing to sell!');return}let total=bag.reduce((s,x)=>s+x.value,0);coins+=total;toast('Sold loot for '+total+' coins!');bag=[];updateUI()}
-function upgrade(){if(coins<upgradeCost){toast('Not enough coins!');return}coins-=upgradeCost;capacity+=2;upgradeCost=Math.round(upgradeCost*1.7);toast('Bag upgraded! Capacity: '+capacity);updateUI()}
-function raid(){if(coins<10){toast('You need at least 10 coins to attempt a raid!');return}coins-=10;let success=Math.random()<.55;if(success){let t=types[Math.floor(Math.random()*types.length)];bag.push(t);toast('Raid success! You stole '+t.emoji+' '+t.name+'!');if(bag.length>capacity){let overflow=bag.pop();coins+=overflow.value;toast('Bag full! '+overflow.name+' converted into '+overflow.value+' coins.')}}else{let loss=Math.min(coins,15);coins-=loss;toast('Raid failed! Lost '+loss+' coins.')}updateUI()}
-function updateUI(){document.getElementById('coins').textContent=coins;document.getElementById('bag').textContent=bag.length;document.getElementById('capacity').textContent=capacity;document.getElementById('items').innerHTML=bag.length?bag.map(x=>x.emoji+' '+x.name+' <small>('+x.value+'c)</small>').join('<br>'):'Your bag is empty.';document.getElementById('upgradeCost').textContent=upgradeCost+' coins'}
-let toastTimer;function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.display='none',2000)}
-window.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.key]=false);setInterval(update,16);
+:root{--lime:#c7f36b;--panel:#142019eF;--line:#476047}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9ac9d0;color:#f5f5e9;font-family:Inter,Arial,sans-serif}#world{position:fixed;inset:0}canvas{display:block}header{position:fixed;z-index:3;top:0;left:0;right:0;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(#101a15dc,transparent);pointer-events:none}h1{margin:0;color:var(--lime);font-size:clamp(18px,3vw,25px);letter-spacing:1.5px;text-shadow:0 2px 8px #17251c}#stats{display:flex;gap:9px} .pill{background:var(--panel);border:1px solid var(--line);padding:9px 13px;border-radius:12px;font-weight:700;box-shadow:0 5px 18px #17251c33}.pill b{color:var(--lime)}#hint{position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:2;background:#142019c9;border:1px solid #ffffff24;border-radius:10px;padding:8px 12px;font-size:12px;color:#e2ecd9;white-space:nowrap;pointer-events:none}#bottom{position:fixed;z-index:3;left:14px;right:14px;bottom:14px;display:flex;justify-content:space-between;align-items:end;gap:12px;pointer-events:none}.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:12px 14px;backdrop-filter:blur(12px);box-shadow:0 8px 30px #0a160d55}.panel h2{font-size:13px;letter-spacing:1px;color:var(--lime);margin:0 0 8px}.items{font-size:12px;color:#e1eadb;line-height:1.65;max-width:230px}.actions{display:flex;gap:7px;margin-top:8px}button{border:0;border-radius:9px;background:var(--lime);color:#172315;font-weight:800;padding:10px 12px;cursor:pointer}button.secondary{background:#344a37;color:#f4f4e8;border:1px solid #61775a}button:active{transform:scale(.96)}#toast{position:fixed;z-index:6;left:50%;bottom:125px;transform:translateX(-50%);padding:11px 16px;background:#142019ed;border:1px solid var(--lime);border-radius:12px;display:none;white-space:nowrap;font-size:13px}#mobile{position:fixed;z-index:4;right:18px;bottom:125px;display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,45px);gap:5px}#mobile button{background:#17251dcc;color:white;border:1px solid #b4d77b88;font-size:18px;padding:0;touch-action:none}#mobile button:nth-child(1){grid-column:2}#mobile button:nth-child(2){grid-column:1;grid-row:2}#mobile button:nth-child(3){grid-column:2;grid-row:2}#mobile button:nth-child(4){grid-column:3;grid-row:2}#raid{position:fixed;right:18px;top:78px;z-index:3}#footer{font-size:10px;color:#dce8d6;margin-top:6px;opacity:.75}@media(max-width:650px){header{padding:12px}#stats{gap:5px}.pill{padding:8px;font-size:12px}#hint{top:65px;font-size:10px}#bottom{left:9px;right:9px;bottom:9px}.panel{padding:10px}#mobile{display:grid;right:12px;bottom:130px}.items{max-width:150px}#raid{top:112px;right:12px}} 
+</style>
+</head>
+<body>
+<div id="world"></div>
+<header><h1>GRAB & GROW <span style="font-size:10px;color:#e7eddf">3D</span></h1><div id="stats"><div class="pill">🪙 <b id="coins">0</b></div><div class="pill">🎒 <b id="bagCount">0</b>/<span id="capacity">5</span></div></div></header>
+<div id="hint">WASD / ARROWS to move · Collect glowing loot · Drag to look around</div>
+<button id="raid" onclick="raid()">⚡ QUICK RAID</button>
+<div id="bottom"><section class="panel"><h2>YOUR COLLECTION</h2><div class="items" id="items">Nothing collected yet.</div><div class="actions"><button onclick="sell()">SELL LOOT</button><button class="secondary" onclick="upgrade()">BAG +2 · <span id="upgradeCost">100</span></button></div><div id="footer">GRAB & GROW · ISLAND TEST 0.2</div></section></div>
+<div id="mobile"><button data-dir="up">▲</button><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+<div id="toast"></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+const mount=document.getElementById('world');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bcbd0);scene.fog=new THREE.Fog(0x9bcbd0,24,62);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;mount.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe5f8ff,0x59704a,2));
+const sun=new THREE.DirectionalLight(0xfff1d2,2.5);sun.position.set(-8,16,9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-22;sun.shadow.camera.right=22;sun.shadow.camera.top=22;sun.shadow.camera.bottom=-22;scene.add(sun);
+const mat=(color,roughness=.9)=>new THREE.MeshStandardMaterial({color,roughness});
+const grass=mat(0x70a94d),darkGrass=mat(0x548640),soil=mat(0x806044),stone=mat(0x777f78),wood=mat(0x795034),leaf=mat(0x397c43),leaf2=mat(0x57994a),cream=mat(0xffe6a0),charcoal=mat(0x26342b);
+const island=new THREE.Group();scene.add(island);
+const ground=new THREE.Mesh(new THREE.CylinderGeometry(13.5,11.7,2.1,12),soil);ground.position.y=-1;ground.receiveShadow=true;ground.castShadow=true;island.add(ground);
+const top=new THREE.Mesh(new THREE.CylinderGeometry(13.5,13.5,.25,12),grass);top.position.y=.08;top.receiveShadow=true;island.add(top);
+const rim=new THREE.Mesh(new THREE.CylinderGeometry(11.8,11.2,.5,12),darkGrass);rim.position.y=-1.95;island.add(rim);
+// scattered grass tufts
+for(let i=0;i<100;i++){let a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*12.6;let tuft=new THREE.Mesh(new THREE.ConeGeometry(.10,.35,4),i%2?grass:darkGrass);tuft.position.set(Math.cos(a)*r,.23,Math.sin(a)*r);tuft.rotation.z=(Math.random()-.5)*.4;island.add(tuft)}
+function tree(x,z,s=1){let g=new THREE.Group();let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18*s,.25*s,1.5*s,7),wood);trunk.position.y=.85*s;trunk.castShadow=true;g.add(trunk);let crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.9*s,1),Math.random()>.5?leaf:leaf2);crown.position.y=1.9*s;crown.castShadow=true;g.add(crown);let crown2=new THREE.Mesh(new THREE.IcosahedronGeometry(.58*s,1),leaf);crown2.position.set(.35*s,2.35*s,.1*s);g.add(crown2);g.position.set(x,.2,z);island.add(g)}
+[[-8,-5,1.1],[-9,3,.8],[7,-7,1],[9,3,.9],[-4,8,.75],[4,8,.8]].forEach(v=>tree(...v));
+function rock(x,z,s){let m=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),stone);m.position.set(x,.25+s*.45,z);m.scale.y=.7;m.castShadow=true;m.receiveShadow=true;island.add(m)}
+[[-6,1,.8],[6,4,.6],[2,-9,.7],[-10,-1,.5],[9,-2,.55]].forEach(v=>rock(...v));
+// small home base
+const base=new THREE.Group();base.position.set(0,.2,-8);island.add(base);
+const house=new THREE.Mesh(new THREE.BoxGeometry(3.3,2.1,2.8),mat(0xe2d4a8));house.position.y=1.15;house.castShadow=true;base.add(house);
+const roof=new THREE.Mesh(new THREE.ConeGeometry(2.65,1.65,4),mat(0x9a6044));roof.position.y=3;roof.rotation.y=Math.PI/4;roof.castShadow=true;base.add(roof);
+const door=new THREE.Mesh(new THREE.BoxGeometry(.75,1.25,.08),wood);door.position.set(0,.75,1.45);base.add(door);
+const sign=new THREE.Mesh(new THREE.BoxGeometry(2.4,.42,.12),charcoal);sign.position.set(0,2.25,1.48);base.add(sign);
+const signText=document.createElement('canvas');signText.width=512;signText.height=96;const st=signText.getContext('2d');st.fillStyle='#c7f36b';st.font='bold 48px Arial';st.textAlign='center';st.fillText('YOUR HIDEOUT',256,64);const tex=new THREE.CanvasTexture(signText);const label=new THREE.Mesh(new THREE.PlaneGeometry(2.25,.38),new THREE.MeshBasicMaterial({map:tex,transparent:true}));label.position.set(0,2.25,1.55);base.add(label);
+// player character made from simple 3D parts
+const player=new THREE.Group();scene.add(player);player.position.set(0,.3,3);
+const bodyMat=mat(0xc4ec69),skin=mat(0xe9b98c),pants=mat(0x394d70),shoe=mat(0x28352c);
+function part(parent,geo,material,x,y,z){const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+part(player,new THREE.CapsuleGeometry(.42,.72,4,8),bodyMat,0,1.15,0);
+part(player,new THREE.SphereGeometry(.36,16,12),skin,0,2.05,0);
+part(player,new THREE.BoxGeometry(.12,.12,.08),charcoal,-.13,2.1,.31);part(player,new THREE.BoxGeometry(.12,.12,.08),charcoal,.13,2.1,.31);
+const leftLeg=part(player,new THREE.BoxGeometry(.25,.65,.3),pants,-.2,.43,0),rightLeg=part(player,new THREE.BoxGeometry(.25,.65,.3),pants,.2,.43,0);
+const leftArm=part(player,new THREE.CapsuleGeometry(.13,.48,3,6),skin,-.53,1.3,0),rightArm=part(player,new THREE.CapsuleGeometry(.13,.48,3,6),skin,.53,1.3,0);
+part(player,new THREE.BoxGeometry(.3,.15,.48),shoe,-.2,.12,.08);part(player,new THREE.BoxGeometry(.3,.15,.48),shoe,.2,.12,.08);
+// collectibles
+const catalog=[{name:'Bloop',emoji:'🫧',value:15,color:0x65dce4},{name:'Mossling',emoji:'🌱',value:20,color:0x8bd45b},{name:'Dust Bunny',emoji:'🐰',value:25,color:0xf1dfc5},{name:'Glowbug',emoji:'✨',value:30,color:0xffd65a},{name:'Rock Buddy',emoji:'🪨',value:35,color:0xaaaeb4},{name:'Tiny UFO',emoji:'🛸',value:50,color:0xb5a0ff}];
+let loot=[],bag=[],coins=0,capacity=5,upgradeCost=100;
+function makeLoot(data,x,z){const g=new THREE.Group();const orb=new THREE.Mesh(new THREE.IcosahedronGeometry(.42,1),new THREE.MeshStandardMaterial({color:data.color,emissive:data.color,emissiveIntensity:.65,roughness:.3}));orb.position.y=.65;orb.castShadow=true;g.add(orb);const ring=new THREE.Mesh(new THREE.TorusGeometry(.58,.045,8,24),new THREE.MeshBasicMaterial({color:0xd9ff8a}));ring.rotation.x=Math.PI/2;ring.position.y=.18;g.add(ring);g.position.set(x,.3,z);scene.add(g);loot.push({group:g,data,phase:Math.random()*6})}
+function spawnLoot(){loot.forEach(l=>scene.remove(l.group));loot=[];for(let i=0;i<17;i++){let a=Math.random()*Math.PI*2,r=2+Math.random()*9.5;let x=Math.cos(a)*r,z=Math.sin(a)*r;if(Math.hypot(x,z+8)<3)continue;makeLoot(catalog[Math.floor(Math.random()*catalog.length)],x,z)}}
+spawnLoot();
+// camera orbit and movement
+let yaw=0,pitch=.28,keys={},touch={},drag=null;
+function cameraUpdate(){const target=new THREE.Vector3(player.position.x,player.position.y+1.25,player.position.z);const dist=8.5;camera.position.set(target.x+Math.sin(yaw)*Math.cos(pitch)*dist,target.y+Math.sin(pitch)*dist+2.2,target.z+Math.cos(yaw)*Math.cos(pitch)*dist);camera.lookAt(target)}
+cameraUpdate();
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||e.pointerType==='touch'){drag={x:e.clientX,y:e.clientY,id:e.pointerId};renderer.domElement.setPointerCapture(e.pointerId)}});
+renderer.domElement.addEventListener('pointermove',e=>{if(drag&&drag.id===e.pointerId){yaw-=(e.clientX-drag.x)*.006;pitch=Math.max(-.05,Math.min(.65,pitch+(e.clientY-drag.y)*.003));drag.x=e.clientX;drag.y=e.clientY}});
+renderer.domElement.addEventListener('pointerup',()=>drag=null);
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});
+window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+document.querySelectorAll('#mobile button').forEach(b=>{const d=b.dataset.dir;const on=e=>{e.preventDefault();touch[d]=true};const off=e=>{e.preventDefault();touch[d]=false};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off)});
+function toast(s){const t=document.getElementById('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',1900)}
+function updateUI(){document.getElementById('coins').textContent=coins;document.getElementById('bagCount').textContent=bag.length;document.getElementById('capacity').textContent=capacity;document.getElementById('upgradeCost').textContent=upgradeCost;document.getElementById('items').textContent=bag.length?bag.map(x=>x.emoji+' '+x.name+' · '+x.value+'c').join('  |  '):'Nothing collected yet.'}
+window.sell=()=>{if(!bag.length)return toast('Your collection is empty!');let n=bag.reduce((s,x)=>s+x.value,0);coins+=n;bag=[];updateUI();toast('Sold your loot for '+n+' coins!')};
+window.upgrade=()=>{if(coins<upgradeCost)return toast('Not enough coins!');coins-=upgradeCost;capacity+=2;upgradeCost=Math.round(upgradeCost*1.7);updateUI();toast('Bag upgraded! Capacity '+capacity)};
+window.raid=()=>{if(coins<10)return toast('Need 10 coins to start a raid');coins-=10;if(Math.random()<.6&&bag.length<capacity){let d=catalog[Math.floor(Math.random()*catalog.length)];bag.push(d);toast('Raid success! '+d.name+' acquired!')}else{toast('Raid failed! Your entry fee is gone.')}updateUI()};
+let last=0,walkTime=0;
+function animate(t){requestAnimationFrame(animate);const dt=Math.min((t-last)/1000||0,.04);last=t;
+let forward=(keys.w||keys.arrowup||touch.up?1:0)-(keys.s||keys.arrowdown||touch.down?1:0),side=(keys.d||keys.arrowright||touch.right?1:0)-(keys.a||keys.arrowleft||touch.left?1:0);
+const len=Math.hypot(forward,side);if(len){forward/=len;side/=len;const angle=yaw;const dx=side*Math.cos(angle)+forward*Math.sin(angle),dz=-side*Math.sin(angle)+forward*Math.cos(angle);player.position.x+=dx*5*dt;player.position.z+=dz*5*dt;player.position.x=Math.max(-11.5,Math.min(11.5,player.position.x));player.position.z=Math.max(-11.5,Math.min(11.5,player.position.z));player.rotation.y=Math.atan2(dx,dz);walkTime+=dt*10;leftLeg.rotation.x=Math.sin(walkTime)*.55;rightLeg.rotation.x=-Math.sin(walkTime)*.55;leftArm.rotation.x=-Math.sin(walkTime)*.35;rightArm.rotation.x=Math.sin(walkTime)*.35}else{leftLeg.rotation.x*=.8;rightLeg.rotation.x*=.8;leftArm.rotation.x*=.8;rightArm.rotation.x*=.8}
+for(let i=loot.length-1;i>=0;i--){const l=loot[i];l.group.position.y=.3+Math.sin(t*.002+l.phase)*.13;l.group.rotation.y+=dt*.8;const dx=player.position.x-l.group.position.x,dz=player.position.z-l.group.position.z;if(Math.hypot(dx,dz)<1.25){if(bag.length>=capacity){toast('Bag full! Sell your loot.');continue}bag.push(l.data);scene.remove(l.group);loot.splice(i,1);updateUI();toast('Collected '+l.data.emoji+' '+l.data.name+'!');if(loot.length<7){let a=Math.random()*Math.PI*2,r=3+Math.random()*8;makeLoot(catalog[Math.floor(Math.random()*catalog.length)],Math.cos(a)*r,Math.sin(a)*r)}}}
+cameraUpdate();renderer.render(scene,camera)}
+requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7)});
+updateUI();
 </script></body></html>
